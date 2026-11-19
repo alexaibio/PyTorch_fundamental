@@ -3,66 +3,76 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 
-# A simple linear regression model: y = Wx + b
+# Linear regression model, one dimensional input : y = Wx + b
 class MyLinear(nn.Module):
     def __init__(self):
         super().__init__()
-        self.weight = nn.Parameter(torch.randn(1) * 0.1)    # learnable (because Parameter)
-        self.bias = nn.Parameter(torch.zeros(1))            # learnable
+        self.weight = nn.Parameter(torch.randn(1) * 0.1)    # x is one dimensional
+        self.bias = nn.Parameter(torch.zeros(1))
 
     def forward(self, x):
         return self.weight * x + self.bias
 
 
-# Data: y = 3x + 2
+model = MyLinear()
+
+############# Training Data: y = 3x + 2
 x = torch.tensor([1., 2., 3., 4., 5., 6., 7., 8.])
 y = 3 * x + 2
 
-model = MyLinear()
-
-
-############# TRAIN: both full-batch amd mini-batch are possible
+############# TRAINING with batches
 lr = 0.01
 batch_size = 4      # set batch_size=8 for full-batch training or batch_size=4 for mini-batch
 num_epochs = 5
 
+# Epoch loop, go through the same data several times
 for epoch in range(num_epochs):
-    # ---- Training ----
-    model.train()       # set to a train mode - dropout etc is turned on
+    model.train()       # set to a train mode - dropout etc are taken into account
 
     # Shuffle data each epoch
     perm = torch.randperm(x.size(0))
     x_shuffled = x[perm]
     y_shuffled = y[perm]
 
-    for i in range(0, x.size(0), batch_size):
-        x_batch = x_shuffled[i : i + batch_size]
-        y_batch = y_shuffled[i : i + batch_size]
+    epoch_loss = 0.0
+
+    # Training loop (by batches)
+    for i_batch_start in range(0, x.size(0), batch_size):
+        x_batch = x_shuffled[i_batch_start : i_batch_start + batch_size]
+        y_batch = y_shuffled[i_batch_start : i_batch_start + batch_size]
 
         # Forward
-        y_pred = model(x_batch)                 # because we implemented forward() method
-        loss = F.mse_loss(y_pred, y_batch)
+        y_pred = model(x_batch)
+        loss = F.mse_loss(y_pred, y_batch)      #Mean Squared Error (MSE)
 
-        # Backward: computes gradients of the loss with respect to all tensors that have requires_grad=True
-        loss.backward()
+        model.zero_grad()   # zeroing grads
+        loss.backward()     # Backward: computes gradients of the loss with respect to all tensors that have requires_grad=True
 
-        # Manual updates
-        with torch.no_grad():       # I’m doing a manual update, don’t track gradients for this.
+        # Manual parameter update
+        with torch.no_grad():           # Don't track operations inside this block for automatic differentiation.
             model.weight -= lr * model.weight.grad
             model.bias -= lr * model.bias.grad
 
-            # Zeroing gradients
-            # By default, PyTorch accumulates gradients into .grad,
-            # we can use it for gradient accumulation - when GPU memory is not enough
-            # but here we anyway zero gradients at every mini-batch
-            model.weight.grad.zero_()
-            model.bias.grad.zero_()
+    epoch_loss += loss.item() * x_batch.size(0)
 
-        print(f"Epoch {epoch+1}: w={model.weight.item():.4f}, b={model.bias.item():.4f}, loss={loss.item():.4f}")
+    print(
+        f"Epoch {epoch+1}: "
+        f"w={model.weight.item():.4f}, "
+        f"b={model.bias.item():.4f}, "
+        f"loss={epoch_loss:.4f}"
+    )
 
-        # ---- Validation ----
-        model.eval()
-        # TBD
+
+# ---- Validation ----
+model.eval()
+with torch.no_grad():
+    predictions = model(x)
+    final_loss = F.mse_loss(predictions, y)
+
+print("\nFinal results:")
+print("Weight:", model.weight.item())
+print("Bias:", model.bias.item())
+print("Final loss:", final_loss.item())
 
 
 

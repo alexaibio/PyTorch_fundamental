@@ -42,10 +42,12 @@ E =
     idx = torch.tensor([0, 2])
 
 E[idx] просто достает два embeddings
+
     tensor([
         [0.1, 0.5],
         [0.7, 0.2]
     ])
+
 здесь нет умножения входных значений на веса.
 
 Но все же nn.Embedding содержит обучаемую матрицу весов, которая хранится в `embedding_model.embedding.weight.data` 

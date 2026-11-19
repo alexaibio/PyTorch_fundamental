@@ -15,4 +15,31 @@ Key points:
 Exploring gradients - `exploring_gradients.py`
 
 ## Manual optimization
+We can organize the learning loop completely manually, i.e update parameters directly without optimizer.
+
+Look at `gradient_manual.py`
+
+
+## Use gradient optimizer
+Alternatively we can use Optimizer
+
+Look at `gradient_optimizer.py`
+
+The difference lies in this block. Instead of updating parameters manually
+
+```python
+with torch.no_grad():
+    model.weight -= lr * model.weight.grad
+    model.bias -= lr * model.bias.grad
+
+```
+ we do it with just one line
+`optimizer.step()`
+
+There are many different Optimizers and they can use different schemas of updating parameters, not only 
+a simple one like Gradient Descent.
+Among them
+- SGD с Momentum
+- Adam
+- AdamW
 
