@@ -1,14 +1,14 @@
 # Illustrate how Fully Connected Linear layer and its difference from Embedding layer
 
 ## Clarifies:
-- nn.Parameter
-- nn.Linear
-- nn.Embedding
+- `nn.Parameter`
+- `nn.Linear`
+- `nn.Embedding`
 
 
 ## nn.Parameter and nn.Linear
 Firstly, nn.Parameter and nn.Linear approaches are equivalent. They have
-- in_features - an input vector x = [x_1, x_2], it is feeded to each neuron
+- in_features - an input vector `x = [x_1, x_2]`, it is feeded to each neuron
 - out_features - number of neurons, each has one output
 
 Inside, an input vector is multiplied to Weights matrix, producing an output vector. 
@@ -28,25 +28,28 @@ Linear и Embedding решают две разные задачи, внутри 
 
 
 For example
+```
 E = nn.Embedding(num_embeddings=3, embedding_dim=2)
 E =
     0.1  0.5
     0.3  0.8
     0.7  0.2
+```
 
 Размерность (3, 2):
 - num_embeddings=3 — количество векторов в таблице.
 - embedding_dim=2 — размерность каждого вектора.
 
 таким образом
-    idx = torch.tensor([0, 2])
+`idx = torch.tensor([0, 2])`
 
-E[idx] просто достает два embeddings
-
+`E[idx]` просто достает два embeddings
+```python
     tensor([
         [0.1, 0.5],
         [0.7, 0.2]
     ])
+```
 
 здесь нет умножения входных значений на веса.
 
